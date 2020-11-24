@@ -11,8 +11,8 @@ api_url = 'https://www.googleapis.com/customsearch/v1'
 api_key = 'AIzaSyAes6F5vryiG9LQoHDv6VGQScNoSb37Lto'
 cx = '82405758baea9c02b'
 
-tmp_root = '/data/tmp/'
-img_root = '/data/images/'
+tmp_root = '/var/www/data/tmp/'
+img_root = '/var/www/data/images/'
 
 def get_img_url(query):
     start = random.randint(0,99)
@@ -31,7 +31,7 @@ def download_img(url):
 
     res = requests.get(url, stream=True)
     f = open(img_path, 'wb')
-    
+
     res.raw.decode_content = True
     shutil.copyfileobj(res.raw, f)
     del res
@@ -51,3 +51,6 @@ def move_img(img_path, filename):
         return target
     else:
         return None
+
+# Obtain image and create reference
+def pull_image(query):

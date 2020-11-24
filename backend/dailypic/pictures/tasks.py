@@ -1,16 +1,8 @@
-from celery import shared_task 
-from models import Picture
-import image_utils
-from datetime import datetime
+from celery import shared_task
 
 @shared_task
-def pull_image(query):
-     img = download_img(get_img_url(query))
-     hash_value = hash_img(img)
-     loc = move_img(img, hash_value)
+def add(x,y): return x + y
 
-     Picture.objects.create(
-             hashvalue = hash_value,
-             file_path = loc,
-             download_date = datetime.utcnow()
-             )
+@shared_task
+def sample_task():
+    print('sample task was run')

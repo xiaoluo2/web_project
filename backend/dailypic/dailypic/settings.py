@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-import os
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'pk-z9c-hmx5wl@3egpscgvxz-p7o7cc)f65&vf++-m((2zhx35'
+SECRET_KEY = 'k7228giy1)42+0r75$n!f7k=t((_@z&gie@cu@4g)i3egad--+'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.dailypicture.xyz','dailypicture.xyz','localhost']
+ALLOWED_HOSTS = ['dailypicture.xyz', 'www.dailypicture.xyz', 'localhost', '165.22.4.83']
 
 
 # Application definition
@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'pictures',
-    'scheduler',
+    'rest_framework',
+    'account',
 ]
 
 MIDDLEWARE = [
@@ -81,12 +82,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dailypic',
         'USER': 'dailypicadmin',
-        'PASSWORD': 'pictureadmin',
+        'PASSWORD': 'dailypic',
         'HOST': 'localhost',
         'PORT': '',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -105,6 +105,18 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+  'DEFAULT_PERMISSION_CLASSES': (
+      'rest_framework.permissions.IsAuthenticated',
+      'rest_framework.permissions.IsAdminUser',
+      'rest_framework.permissions.AllowAny',
+  ),
+  'DEFAULT_AUTHENTICATION_CLASSES': (
+      'rest_framework_simplejwt.authentication.JWTAuthentication',
+  ),
+}
+REST_USE_JWT = True
 
 
 # Internationalization
@@ -126,17 +138,19 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-from celery.schedules import crontab
-import dailypic.tasks
+CELERY_BROKER_URL = 'amqp://localhost:5672'
 
-# Celery settings
-CELERY_TIMEZONE = 'UTC'
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+#: Only add pickle to this list if your broker is secured
+#: from unwanted access (see userguide/security.html)
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
+CELERY_TASK_SERIALIZER = 'json'
+
+from celery.schedules import crontab
+
 CELERY_BEAT_SCHEDULE = {
     "sample_task": {
         "task": "dailypic.tasks.sample_task",
-        "schedule": crontab(minute="*/1"),
-        "args": "sample task run",
-    },
+        "schedule": crontab(minute="*/1")
+    }
 }

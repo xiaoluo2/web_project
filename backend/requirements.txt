@@ -1,0 +1,11 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+gunicorn
+psycopg2-binary
+"celery[redis]"
+django-celery-beat
+pillow
+requests
+imagehash
+
