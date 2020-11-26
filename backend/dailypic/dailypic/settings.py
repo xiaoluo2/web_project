@@ -9,6 +9,12 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+import environ
+env = environ.Env(
+        DEBUG=(bool, False)
+        )
+
+environ.Env.read_env()
 
 from pathlib import Path
 
@@ -20,10 +26,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'k7228giy1)42+0r75$n!f7k=t((_@z&gie@cu@4g)i3egad--+'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = ['dailypicture.xyz', 'www.dailypicture.xyz', 'localhost', '165.22.4.83']
 
@@ -36,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
     'django_celery_beat',
     'pictures',
     'rest_framework',
@@ -78,14 +83,7 @@ WSGI_APPLICATION = 'dailypic.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dailypic',
-        'USER': 'dailypicadmin',
-        'PASSWORD': 'dailypic',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
+        'default': env.db(),
 }
 
 # Password validation
@@ -136,9 +134,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_ROOT = '/var/www/data/'
 
-CELERY_BROKER_URL = 'amqp://localhost:5672'
+CELERY_BROKER_URL = 'redis://localhost:6379'
 
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)
@@ -147,10 +145,11 @@ CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 CELERY_TASK_SERIALIZER = 'json'
 
 from celery.schedules import crontab
+import pictures.tasks 
 
 CELERY_BEAT_SCHEDULE = {
     "sample_task": {
-        "task": "dailypic.tasks.sample_task",
+        "task": "pictures.tasks.sample_task",
         "schedule": crontab(minute="*/1")
     }
 }

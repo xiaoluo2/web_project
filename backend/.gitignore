@@ -1,3 +1,4 @@
-# ignore pycache
 **/__pycache__
-.envrc
+results.sqlite
+.env
+**/migrations

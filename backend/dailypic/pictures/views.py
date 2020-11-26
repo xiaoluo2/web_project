@@ -2,15 +2,21 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Resposne
-from pictures.serializers import PictureSerializer, GallerySerializer
+from pictures.serializers import PictureSerializer, GallerySerializer, ImageRequestSerializer
 from pictures.models import Picture, Gallery
+from pictures.tasks import pull_image
+
+@api_view(['POST'])
+def image_request(res):
+    serializer = ImageRequestSerializer(data=res.data)
+    pic = pull_image.delay(serializer.query)
+    return Response(pic.url)
 
 @api_view(['GET']) 
 def picture_list(res):
-    if res.method == 'GET':
-        pictures = Picture.objects.all()
-        serializer = PictureSerializer(pictures, many=True)
-        return Response(serializer.data)
+    pictures = Picture.objects.all()
+    serializer = PictureSerializer(pictures, many=True)
+    return Response(serializer.data)
 
 @api_view(['GET', 'DELETE']) 
 def picture_detail(res, pk):
