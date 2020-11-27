@@ -43,9 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django_celery_beat',
-    'pictures',
     'rest_framework',
     'account',
+    'pictures',
 ]
 
 MIDDLEWARE = [
@@ -143,13 +143,3 @@ CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_BACKEND = 'db+sqlite:///results.sqlite'
 CELERY_TASK_SERIALIZER = 'json'
-
-from celery.schedules import crontab
-import pictures.tasks 
-
-CELERY_BEAT_SCHEDULE = {
-    "sample_task": {
-        "task": "pictures.tasks.sample_task",
-        "schedule": crontab(minute="*/1")
-    }
-}

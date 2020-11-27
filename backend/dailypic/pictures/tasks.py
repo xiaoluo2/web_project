@@ -1,134 +1,138 @@
-from celery import shared_task
 import requests
 import random
 import string
-from PIL import Image
-from imagehash import phash
 import shutil
 import os
 import logging
-import datetime
+from datetime import datetime
 import environ
+from celery import shared_task, chain
 from dailypic.settings import STATIC_ROOT
+from PIL import Image
+from imagehash import phash
+from django.core import serializers
+from pictures.models import Picture
 
 env = environ.Env()
 environ.Env.read_env()
 
 logger = logging.getLogger(__name__)
 
-
 # Google Custom Search API
-api_url = 'https://www.googleapis.com/customsearch/v1'
-api_key = env('GOOGLE_API_KEY')
-cx = env('GOOGLE_CX')
+API_URL = 'https://www.googleapis.com/customsearch/v1'
+API_KEY = env('GOOGLE_API_KEY')
+CX = env('GOOGLE_CX')
 
 # max image size
-max_size = 1920, 1080
+MAX_SIZE = 1920, 1080
 # max thumbnail size
-thumb_size = 250, 250
-
-@shared_task
-def sample_task():
-    print('sample task was run')
+THB_SIZE = 250, 250
 
 # calls chain of tasks to pull image and returns Picture object
 @shared_task
 def pull_image(query):
-    # get url from google api
-    r= get_img_url.delay(query)
-    d_url= r.get()
+    chain = get_img_url.s(query) | was_downloaded.s() | download_img.s() | compare_img.s() | save_img.s() | create_object.s()
+    chain()
 
-    # check if picture was previously downloaded
-    try:
-        pic = Picture.objects.get(url=d_url)
-    except Picture.DoesNotExist:
-        logger.error('Class Picture does not exist.')
-    if pic.exists():
-        logger.info('Image previously downloaded.')
-        return pic
-
-    r = download_img.delay(d_url)
-    tmp_path = r.get()
-
-    # create perceptual hash
-    r= hash_img.delay(tmp_path)
-    hvalue = r.get()
-
-    # check if similar image exists
-    try:
-        pic = Picture.objects.get(hashvalue=hvalue)
-    except Picture.DoesNotExist:
-        logger.error('Class Picture does not exist.')
-    if pic.exists():
-        logger.info('Similar image exists in database')
-        return pic
-
-    save_image.delay(tmp_path, hvalue + '.thumbnail', thumb_size, 'png')
-    r = save_image.delay(tmp_path, hvalue, max_size, format=None)
-    new_path = r.get()
-
-    # create and return Picture object
-    Picture.objects.create(
-            hashvalue=hvalue,
-            path = new_path,
-            url = STATIC_ROOT + 'images/' + hvalue,
-            query = query,
-            download_url = d_url,
-            download_time = datetime.now()
+# deserialize picture data and create object
+@shared_task
+def create_object(picdata):
+    pic = Picture(
+            url = 'images.dailypicture.xyz/pictures/' + picdata['hashvalue'] + '.' + picdata['format'].lower(),
+            query = picdata['query'],
+            format = picdata['format'],
+            path = picdata['path'],
+            hashvalue = picdata['hashvalue'],
+            download_url = picdata['download_url'],
+            download_time = picdata['download_time'],
             )
-
-    return pic
+    pic.save()
+    return pic.pk
 
 # obtains image url from Google Custom Search API
 @shared_task
 def get_img_url(query):
     start = random.randint(0,99)
-    payload = {'key': api_key, 'cx': cx, 'q': query, 'searchType': 'image', 'start': start, 'num':'1'}
+    payload = {'key': API_KEY, 'cx': CX, 'q': query, 'searchType': 'image', 'start': start, 'num':'1'}
 
-    res = requests.get(api_url, params = payload)
+    res = requests.get(API_URL, params = payload)
     js = res.json()
     img_url = js['items'][0]['link']
     del res
+    # json to pass through task chain
+    picdata = {'download_url': img_url, 'query': query}
+    return picdata
 
-    return img_url
+# check if image has been downloaded
+@shared_task(bind=True)
+def was_downloaded(self, picdata):
+    try:
+        pic = Picture.objects.get(url=picdata['download_url'])
+    except Picture.DoesNotExist:
+        pic = None
+    if pic is not None and pic.exists():
+        logger.info('Image previously downloaded.')
+        # stop task chain
+        self.request.callbacks = None
+        return pic.id
+    return picdata
 
 # download image to temporary folder
 @shared_task
-def download_img(url):
+def download_img(picdata):
 
     # get file extension
+    url = picdata['download_url']
     filename = url.split('/')[-1]
-    format = filename.split('.')[-1]
 
     random_name = ''.join(random.choices(string.ascii_letters + string.digits, k=3))
-    tmp_path = STATIC_ROOT + 'tmp/' + random_name + '.' + format
+    picdata['path'] = STATIC_ROOT + 'tmp/' + random_name 
 
     res = requests.get(url, stream=True)
-    f = open(tmp_path, 'wb')
+    f = open(picdata['path'], 'wb')
 
     res.raw.decode_content = True
     shutil.copyfileobj(res.raw, f)
     del res
 
-    return tmp_path
+    picdata['download_time'] = datetime.now()
+
+    return picdata
 
 # return perceptual hash string
 # :img: PIL Image
-@shared_task
-def hash_image(path):
-    img = Image.open(path)
-    return str(phash(img))
+@shared_task(bind=True)
+def compare_img(self, picdata):
+    img = Image.open(picdata['path'])
+    picdata['hashvalue'] = str(phash(img))
+    img.close()
+    # check if similar image exists
+    try:
+        pic = Picture.objects.get(hashvalue=hash)
+    except Picture.DoesNotExist:
+        pic = None
+    if pic is not None and pic.exists():
+        logger.info('Similar image exists.')
+        # stop task chain
+        self.request.callbacks = None
+        return pic.id
+    
+    # passing path location through the chain
+    return picdata
 
-# resizes and saves image in appropriate format and location
+# saves image and thumbnail in appropriate format and location
 # :return:path of saved image if successful, None on fail
 @shared_task
-def save_image(src, filename, size, format=None):
-    img = Image.open(src)
-    img = img.thumbnail(size)
-    if format is None:
-        format = img.format.lower()
-    path = STATIC_ROOT + 'images/' + filename + '.' + format
-    img.save(path, format=format)
-    if not os.path.exists(path):
-        return None
-    return path
+def save_img(picdata):
+    img = Image.open(picdata['path'])
+    picdata['format'] = img.format
+    # save image
+    img.thumbnail(MAX_SIZE)
+    path = STATIC_ROOT + 'images/' + picdata['hashvalue'] + '.' + img.format.lower()
+    img.save(path)
+    picdata['path'] = path
+    # save thumbnail
+    img.thumbnail(THB_SIZE)
+    path = STATIC_ROOT + 'images/' + picdata['hashvalue'] + '.thumbnail.png' 
+    img.save(path, format='PNG')
+    return picdata 
