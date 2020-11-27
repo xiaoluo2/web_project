@@ -1,75 +1,33 @@
-from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Resposne
+from rest_framework import viewsets
+
 from pictures.serializers import PictureSerializer, GallerySerializer, ImageRequestSerializer
 from pictures.models import Picture, Gallery
 from pictures.tasks import pull_image
+from pictures.permissons import IsOwner
 
 @api_view(['POST'])
-def image_request(res):
-    serializer = ImageRequestSerializer(data=res.data)
-    pic = pull_image.delay(serializer.query)
-    return Response(pic.url)
+@permission_classes(AllowAny)
+def pull_request(response):
+    serializer = ImageRequestSerializer(data=response.data)
+    pictures = pull_images.delay(serializer.query, serializer.number).get()
+    return Response(pictures)
 
-@api_view(['GET']) 
-def picture_list(res):
-    pictures = Picture.objects.all()
-    serializer = PictureSerializer(pictures, many=True)
-    return Response(serializer.data)
+class PictureViewSet(viewsets.ModelViewSet):
+    queryset = Picture.objects.all()
+    serializer_class = PictureSerializer
 
-@api_view(['GET', 'DELETE']) 
-def picture_detail(res, pk):
-
-    try:
-        picture = Picture.objects.get(pk=pk)
-    except Picture.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if res.method == 'GET':
-        serializer = PictureSerializer(picture)
-        return Response(serializer.data)
-
-    elif res.method == 'DELETE':
-        picture.delete()
-        serializer = PictureSerializer(status=status.HTTP_204_NO_CONTENT)
-
-@api_view(['GET', 'POST'])
-def gallery_list(res):
-    if res.method == 'GET':
-        gallerys = Gallery.objects.all()
-        serializer = GallerySerializer(gallerys, many=True)
-        return Repsonse(serializer.data)
-
-    elif res.method == 'POST':
-        serializer = GallerySerializer(data=res.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Repsonse(serializer.data, status=status.HTTP_201_CREATED)
+    def get_permissions(self):
+        if self.action == 'retrieve':
+            permission_classes = [AllowAny]
         else:
-            return Repsonse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def gallery_detail(res, pk):
-    
-    try:
-        gallery = Gallery.objects.get(pk=pk)
-    except Gallery.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    if res.method == 'GET':
-        serializer = GallerySerializer(gallery)
-        return Response(serlaizer.data)
-
-    elif res.method
-        serializer = GallerySerializer(gallery, data=res.data)
-        if serializer.is_valid():
-            serializer.save()
-            reutrn Response(serializer.data)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif res.method == 'DELETE':
-        gallery.delete()
-        return Resposne(status=status.HTTP_204_NO_CONTENT)
-
+class GalleryViewSet(viewsets.ModelViewSet):
+    queryset = Gallery.objects.all()
+    serializer_class = GallerySerializer
+    permission_classes = [IsOwner, IsAdminUser]

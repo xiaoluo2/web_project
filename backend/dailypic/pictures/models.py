@@ -16,7 +16,7 @@ class Picture(models.Model):
 class Gallery(models.Model):
     title = models.CharField(max_length=50)
     pictures = models.ManyToManyField(Picture, through='PictureOrder')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     
 class PictureOrder(models.Model):
     gallery = models.ForeignKey(Gallery, on_delete=models.CASCADE)

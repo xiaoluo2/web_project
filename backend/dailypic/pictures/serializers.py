@@ -7,14 +7,14 @@ class PictureSerializer(serializers.ModelSerializer):
         fields = ['id', 'hashvalue', 'url']
 
 class PictureOrderSerializer(serializers.ModelSerializer):
-    picture_url = serializers.ReadOnlyField(source='picture.url')
+    picture_id = serializers.ReadOnlyField(source='picture')
 
     class Meta:
         model = PictureOrder
-        fields = ['id', 'query', 'picture_url', 'date']
+        fields = ['id', 'query', 'picture_id', 'date']
 
 class GallerySerializer(serializers.ModelSerializer):
-    pictures = PictureSerializer(source='pictures', required=False, many=True)
+    pictures = PictureOrderSerializer(source='pictures', required=False, many=True)
 
     class Meta:
         model = Gallery
@@ -22,3 +22,4 @@ class GallerySerializer(serializers.ModelSerializer):
 
 class ImageRequestSerializer(serializers.Serializer):
     query = serializers.CharField(max_length=50)
+    number = serializers.IntegerField(min_value=1, max_value=10)

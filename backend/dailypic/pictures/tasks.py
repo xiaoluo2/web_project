@@ -6,7 +6,7 @@ import os
 import logging
 from datetime import datetime
 import environ
-from celery import shared_task, chain
+from celery import shared_task, chain, group
 from dailypic.settings import STATIC_ROOT
 from PIL import Image
 from imagehash import phash
@@ -22,11 +22,18 @@ logger = logging.getLogger(__name__)
 API_URL = 'https://www.googleapis.com/customsearch/v1'
 API_KEY = env('GOOGLE_API_KEY')
 CX = env('GOOGLE_CX')
+IMAGE_URL = 'images.dailypicture.xyz/images/' 
 
 # max image size
 MAX_SIZE = 1920, 1080
 # max thumbnail size
 THB_SIZE = 250, 250
+
+# pull N images
+@shared_task
+def pull_images(query, N):
+    group(pull_image.s(query) for i in range(N))
+    group()
 
 # calls chain of tasks to pull image and returns Picture object
 @shared_task
@@ -38,7 +45,7 @@ def pull_image(query):
 @shared_task
 def create_object(picdata):
     pic = Picture(
-            url = 'images.dailypicture.xyz/pictures/' + picdata['hashvalue'] + '.' + picdata['format'].lower(),
+            url = IMAGE_URL + picdata['hashvalue'] '.' + picdata['format'].lower(),
             query = picdata['query'],
             format = picdata['format'],
             path = picdata['path'],
