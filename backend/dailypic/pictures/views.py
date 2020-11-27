@@ -7,7 +7,7 @@ from rest_framework import viewsets
 from pictures.serializers import PictureSerializer, GallerySerializer, ImageRequestSerializer
 from pictures.models import Picture, Gallery
 from pictures.tasks import pull_image
-from pictures.permissons import IsOwner
+from pictures.permissons import IsOwnerOrIsAdmin
 
 @api_view(['POST'])
 @permission_classes(AllowAny)
@@ -30,4 +30,4 @@ class PictureViewSet(viewsets.ModelViewSet):
 class GalleryViewSet(viewsets.ModelViewSet):
     queryset = Gallery.objects.all()
     serializer_class = GallerySerializer
-    permission_classes = [IsOwner, IsAdminUser]
+    permission_classes = [IsOwnerOrIsAdmin]
