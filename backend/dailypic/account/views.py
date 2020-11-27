@@ -16,3 +16,8 @@ class RegisterApi(generics.GenericAPIView):
             "user": UserSerializer(User, context=self.get_serializer_context()).data,
             "message": "User Created Successfully.  Now perform Login to get your token",
         })
+
+class UserViewSet():
+    permission_classes = [IsAdmin | IsUser]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()

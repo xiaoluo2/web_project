@@ -30,4 +30,4 @@ class PictureViewSet(viewsets.ModelViewSet):
 class GalleryViewSet(viewsets.ModelViewSet):
     queryset = Gallery.objects.all()
     serializer_class = GallerySerializer
-    permission_classes = [IsOwnerOrIsAdmin]
+    permission_classes = [IsOwner | IsAdmin]
