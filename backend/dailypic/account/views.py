@@ -1,11 +1,13 @@
-from rest_framework import generics, permissions, mixins
+from rest_framework import generics 
 from rest_framework.response import Response
 from account.serializers import RegisterSerializer, UserSerializer
+from rest_framework.permissions import IsAdminUser, AllowAny
+from account.permissions import IsUser
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class RegisterApi(generics.GenericAPIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
 
     def post(self, request, *args,  **kwargs):
@@ -18,6 +20,6 @@ class RegisterApi(generics.GenericAPIView):
         })
 
 class UserViewSet():
-    permission_classes = [IsAdmin | IsUser]
+    permission_classes = [IsAdminUser | IsUser]
     serializer_class = UserSerializer
     queryset = User.objects.all()
