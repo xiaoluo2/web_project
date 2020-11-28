@@ -31,7 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['dailypicture.xyz', 'www.dailypicture.xyz', 'localhost', '165.22.4.83']
+ALLOWED_HOSTS = ['api.dailypicture.xyz', 'localhost', '165.22.4.83']
 
 
 # Application definition

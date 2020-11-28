@@ -1,13 +1,13 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Resposne
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.response import Response
 from rest_framework import viewsets
 
 from pictures.serializers import PictureSerializer, GallerySerializer, ImageRequestSerializer
 from pictures.models import Picture, Gallery
 from pictures.tasks import pull_image
-from pictures.permissons import IsOwnerOrIsAdmin
+from pictures.permissons import IsOwner
 
 @api_view(['POST'])
 @permission_classes(AllowAny)
@@ -30,4 +30,4 @@ class PictureViewSet(viewsets.ModelViewSet):
 class GalleryViewSet(viewsets.ModelViewSet):
     queryset = Gallery.objects.all()
     serializer_class = GallerySerializer
-    permission_classes = [IsOwner | IsAdmin]
+    permission_classes = [IsOwner | IsAdminUser]

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 API_URL = 'https://www.googleapis.com/customsearch/v1'
 API_KEY = env('GOOGLE_API_KEY')
 CX = env('GOOGLE_CX')
-IMAGE_URL = 'images.dailypicture.xyz/images/' 
+IMAGE_URL = 'images.dailypicture.xyz/' 
 
 # max image size
 MAX_SIZE = 1920, 1080
@@ -45,7 +45,7 @@ def pull_image(query):
 @shared_task
 def create_object(picdata):
     pic = Picture(
-            url = IMAGE_URL + picdata['hashvalue'] '.' + picdata['format'].lower(),
+            url = IMAGE_URL + picdata['hashvalue'] + '.' + picdata['format'].lower(),
             query = picdata['query'],
             format = picdata['format'],
             path = picdata['path'],

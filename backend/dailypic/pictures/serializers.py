@@ -1,4 +1,4 @@
-from pictures.models import Picture, Gallery
+from pictures.models import Picture, Gallery, PictureOrder
 from rest_framework import serializers
 
 class PictureSerializer(serializers.ModelSerializer):
