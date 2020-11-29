@@ -8,9 +8,8 @@ from rest_framework.generics import GenericAPIView
 from pictures.serializers import PictureSerializer, GallerySerializer, ImageRequestSerializer
 from pictures.models import Picture, Gallery
 from pictures.tasks import pull_image
-from pictures.permissons import IsOwner
+from pictures.permissons import IsOwner, IsAdminOrReadOnly
 
-from celery.result import AsyncResult
 import json
 
 @api_view(['POST'])
@@ -27,7 +26,7 @@ def pull_request(response):
 class PictureViewSet(viewsets.ModelViewSet):
     queryset = Picture.objects.all()
     serializer_class = PictureSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 class GalleryViewSet(viewsets.ModelViewSet):
     queryset = Gallery.objects.all()

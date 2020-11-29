@@ -2,9 +2,10 @@ from pictures.models import Picture, Gallery, PictureOrder
 from rest_framework import serializers
 
 class PictureSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Picture
-        fields = ['id', 'hashvalue', 'url']
+        fields = ['id', 'thumbanil', 'url']
 
 class PictureOrderSerializer(serializers.ModelSerializer):
     picture_id = serializers.ReadOnlyField(source='picture')

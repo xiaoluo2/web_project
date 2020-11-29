@@ -8,7 +8,6 @@ from datetime import datetime
 import environ
 from celery import shared_task, chain, group
 from celery.result import AsyncResult
-from dailypic.settings import STATIC_ROOT
 from PIL import Image, ImageOps
 from imagehash import phash
 from django.core import serializers
@@ -23,7 +22,7 @@ logger = logging.getLogger(__name__)
 API_URL = 'https://www.googleapis.com/customsearch/v1/siterestrict?'
 API_KEY = env('GOOGLE_API_KEY')
 CX = env('GOOGLE_CX')
-IMAGES_URL = 'images.dailypicture.xyz/' 
+IMAGES_URL = env('IMAGES_URL') 
 
 # max image size
 MAX_SIZE = 1920, 1080
@@ -52,9 +51,7 @@ def create_object(picdata):
                 'query': picdata['query'],
                 'download_url': download_url,
                 'download_time': picdata['download_time'],
-                'path': picdata['path'],
                 'format': picdata['format'],
-                'url': url,
                 }
             )
 
@@ -152,16 +149,3 @@ def save_img(picdata):
     img.save(path, format='PNG')
     return picdata 
 
-@shared_task
-def last_task():
-    print('LAST TASK RUN')
-
-@shared_task
-def test_task():
-    print('TEST TASK RUN')
-
-@shared_task(bind=True)
-def break_chain(self):
-    if self.request.chain:
-        self.request.chain = self.request.chain[:1]
-    return
