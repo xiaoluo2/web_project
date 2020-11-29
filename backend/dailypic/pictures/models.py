@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Picture(models.Model):
-    hashvalue = models.CharField(max_length=16, unique=True)
+    hashvalue = models.CharField(max_length=50, unique=True)
     path = models.FilePathField(unique=True)
     format = models.CharField(max_length=4)
     url = models.URLField(unique=True)

@@ -14,12 +14,15 @@ class PictureOrderSerializer(serializers.ModelSerializer):
         fields = ['id', 'query', 'picture_id', 'date']
 
 class GallerySerializer(serializers.ModelSerializer):
-    pictures = PictureOrderSerializer(source='pictures', required=False, many=True)
+    pictures = PictureOrderSerializer(required=False, many=True)
 
     class Meta:
         model = Gallery
-        fields = ['id', 'title', 'pictures', 'user']
+        fields = ['id', 'title', 'pictures', 'owner']
 
 class ImageRequestSerializer(serializers.Serializer):
     query = serializers.CharField(max_length=50)
     number = serializers.IntegerField(min_value=1, max_value=10)
+
+    class Meta:
+        fields = ['query', 'number']
