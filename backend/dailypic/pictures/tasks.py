@@ -12,6 +12,7 @@ from PIL import Image, ImageOps
 from imagehash import phash
 from django.core import serializers
 from pictures.models import Picture
+from dailypic.settings import STATIC_ROOT
 
 env = environ.Env()
 environ.Env.read_env()

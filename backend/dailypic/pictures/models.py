@@ -24,8 +24,8 @@ class Picture(models.Model):
 
     # define values based on other values on save
     def save(self, *args, **kwargs):
-        self.path = STATIC_ROOT + self.hashvalue + '.' + self.format
-        self.url = IMAGES_URL + self.hashvalue + '.' + self.format
+        self.path = STATIC_ROOT + self.hashvalue + '.' + self.format.lower()
+        self.url = IMAGES_URL + self.hashvalue + '.' + self.format.lower()
         self.thumbnail = IMAGES_URL + self.hashvalue + '.thumbnail.png'
         super().save(*args, **kwargs)
 

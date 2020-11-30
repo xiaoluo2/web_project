@@ -1,9 +1,10 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import viewsets
 from rest_framework.generics import GenericAPIView
+from rest_framework.throttling import UserRateThrottle
 
 from pictures.serializers import PictureSerializer, GallerySerializer, ImageRequestSerializer
 from pictures.models import Picture, Gallery
@@ -14,6 +15,7 @@ import json
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([UserRateThrottle])
 def pull_request(response):
     serializer = ImageRequestSerializer(data=response.data)
     serializer.is_valid(raise_exception=True)

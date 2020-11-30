@@ -5,7 +5,7 @@ class PictureSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Picture
-        fields = ['id', 'thumbanil', 'url']
+        fields = ['id', 'thumbnail', 'url']
 
 class PictureOrderSerializer(serializers.ModelSerializer):
     picture_id = serializers.ReadOnlyField(source='picture')
