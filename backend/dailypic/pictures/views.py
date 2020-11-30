@@ -13,6 +13,7 @@ from pictures.permissons import IsOwner, IsAdminOrReadOnly
 
 import json
 
+# make request and reutrn image urls
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @throttle_classes([UserRateThrottle])
@@ -20,9 +21,16 @@ def pull_request(response):
     serializer = ImageRequestSerializer(data=response.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.data
-    task_list = [pull_image(data['query']) for i in range(data['number'])]
-    res_list = [r.get() for r in task_list]
-    pic_data = json.dumps({"pictures": res_list})
+    r = pull_image(data['query'])
+    id = r.get()
+    try:
+        pic = Picture.objects.get(pk=id)
+    except Picture.DoesNotExist:
+        pic = None
+    if pic is not None:
+        urls = {'url': pic.url, 'thumbnail': pic.thumbnail}
+
+    pic_data = json.dumps(urls)
     return Response(pic_data)
 
 class PictureViewSet(viewsets.ModelViewSet):

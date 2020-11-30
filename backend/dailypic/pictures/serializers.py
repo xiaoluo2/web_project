@@ -23,7 +23,6 @@ class GallerySerializer(serializers.ModelSerializer):
 
 class ImageRequestSerializer(serializers.Serializer):
     query = serializers.CharField(max_length=50)
-    number = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
-        fields = ['query', 'number']
+        fields = ['query']
