@@ -16,9 +16,11 @@ import json
 # make request and reutrn image urls
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@throttle_classes([UserRateThrottle])
 def pull_request(response):
+    print(response.META)
+    print(response.data);
     serializer = ImageRequestSerializer(data=response.data)
+
     serializer.is_valid(raise_exception=True)
     data = serializer.data
     r = pull_image(data['query'])

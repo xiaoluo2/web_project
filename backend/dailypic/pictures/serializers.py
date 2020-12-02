@@ -22,7 +22,7 @@ class GallerySerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'pictures', 'owner']
 
 class ImageRequestSerializer(serializers.Serializer):
-    query = serializers.CharField(max_length=50)
+    query = serializers.CharField()
 
     class Meta:
         fields = ['query']
