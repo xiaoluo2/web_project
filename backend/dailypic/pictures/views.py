@@ -10,6 +10,7 @@ from pictures.serializers import PictureSerializer, GallerySerializer, ImageRequ
 from pictures.models import Picture, Gallery
 from pictures.tasks import pull_image
 from pictures.permissons import IsOwner, IsAdminOrReadOnly
+from celery.result import AsyncResult
 
 import json
 
