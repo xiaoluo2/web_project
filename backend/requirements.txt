@@ -8,5 +8,5 @@ django-celery-beat
 pillow
 requests
 imagehash
-
 django-environ
+django-cors-headers

@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password# Register serializer
+from django.contrib.auth.hashers import make_password
 User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):

@@ -7,6 +7,6 @@ router = DefaultRouter()
 router.register(r'pictures', PictureViewSet)
 router.register(r'gallerys', GalleryViewSet)
 urlpatterns = [
-        path('pull_images', pull_request),
+        path('pull_image', pull_request),
         path('', include(router.urls)),
         ]
