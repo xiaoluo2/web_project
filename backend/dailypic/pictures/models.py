@@ -15,11 +15,11 @@ class Picture(models.Model):
     hashvalue = models.CharField(max_length=50, unique=True)
     path = models.FilePathField(unique=True)
     format = models.CharField(max_length=4)
-    url = models.URLField(unique=True)
-    thumbnail = models.URLField(unique=True)
+    url = models.URLField(max_length=200, unique=True)
+    thumbnail = models.URLField(max_length=200, unique=True)
     reported = models.BooleanField(default=False)
     query = models.CharField(max_length=50)
-    download_url = models.URLField(unique=True)
+    download_url = models.URLField(max_length=200, unique=True)
     download_time = models.DateTimeField()
 
     # define values based on other values on save

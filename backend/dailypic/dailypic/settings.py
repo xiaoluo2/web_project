@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django_celery_beat',
     'rest_framework',
+    'corsheaders',
     'account',
     'pictures',
 ]
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -104,6 +106,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# CORS
+CORS_ALLOWED_ORIGINS = [
+        'http://localhost:53818'
+        ] 
+
 REST_FRAMEWORK = {
   'DEFAULT_PERMISSION_CLASSES': (
       'rest_framework.permissions.IsAuthenticated',
@@ -111,13 +118,13 @@ REST_FRAMEWORK = {
   'DEFAULT_AUTHENTICATION_CLASSES': (
       'rest_framework_simplejwt.authentication.JWTAuthentication',
   ),
-  'DEFAULT_THROTTLE_CLASSES': [
-      'rest_framework.throttling.AnonRateThrottle',
-      ],
-  'DEFAULT_THROTTLE_RATES': {
-      'anon': '20/day',
-      'user': '100/day' 
-      }
+# 'DEFAULT_THROTTLE_CLASSES': [
+#     'rest_framework.throttling.AnonRateThrottle',
+#     ],
+# 'DEFAULT_THROTTLE_RATES': {
+#     'anon': '20/day',
+#     'user': '100/day' 
+#     }
 }
 REST_USE_JWT = True
 

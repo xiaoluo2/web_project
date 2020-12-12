@@ -1,0 +1,79 @@
+# Application
+server {
+	root /var/www/html/dailypicture.xyz;
+        index index.html index.htm;
+        server_name dailypicture.xyz www.dailypicture.xyz;
+
+	access_log /var/log/nginx/dailypicture.xyz.access.log;
+	error_log /var/log/nginx/dailypicture.xyz.access.log;
+
+        location = /favicon.ico { access_log off; log_not_found off; }
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/www.dailypicture.xyz/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.dailypicture.xyz/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+
+# API
+server {
+       charset utf-8;
+       client_max_body_size 2K;
+
+       server_name api.dailypicture.xyz;
+
+       location / {
+                include proxy_params;
+                #proxy_pass http://unix:/run/gunicorn.sock;
+                proxy_pass http://127.0.0.1:8000;
+       }
+
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/www.dailypicture.xyz/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.dailypicture.xyz/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+	
+server {
+    if ($host = www.dailypicture.xyz) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+        listen 80;
+        listen [::]:80;
+
+        server_name dailypicture.xyz www.dailypicture.xyz;
+    return 404; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = api.dailypicture.xyz) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+       listen 80;
+       listen [::]:80;
+
+       server_name api.dailypicture.xyz;
+    return 404; # managed by Certbot
+
+
+}
