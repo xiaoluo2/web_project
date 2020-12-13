@@ -108,7 +108,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-        'https://www.dailypicture.xyz'
+        'https://www.dailypicture.xyz',
+        'https://dailypicture.xyz',
         ] 
 
 REST_FRAMEWORK = {
