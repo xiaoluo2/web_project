@@ -108,7 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-        'http://localhost:53818'
+        'https://www.dailypicture.xyz'
         ] 
 
 REST_FRAMEWORK = {

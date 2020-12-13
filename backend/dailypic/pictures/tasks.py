@@ -64,13 +64,20 @@ def get_img_url(query):
     start = random.randint(0,99)
     payload = {'key': API_KEY, 'cx': CX, 'q': query, 'searchType': 'image', 'start': start, 'num':'1'}
 
-    res = requests.get(API_URL, params = payload)
-    js = res.json()
-    img_url = js['items'][0]['link']
-    del res
-    # json to pass through task chain
-    picdata = {'download_url': img_url, 'query': query}
-    return picdata
+    try:
+        res = requests.get(API_URL, params = payload)
+        res.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        js = res.json()
+        img_url = js['items'][0]['link']
+        del res
+        # json to pass through task chain
+        picdata = {'download_url': img_url, 'query': query}
+        return picdata
 
 # check if image has been downloaded
 @shared_task(bind=True)
